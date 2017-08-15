@@ -144,10 +144,12 @@ class MSS(MSSBase):
                 rot = self.core.CGDisplayRotation(display)
                 if rotations[rot] in ['left', 'right']:
                     width, height = height, width
+                rounded_width = int(math.ceil(width // 16) * 16)
                 self._monitors.append({
                     'left': int(rect.origin.x),
                     'top': int(rect.origin.y),
-                    'width': int(width),
+                    'width': rounded_width,
+                    'original_width': int(width),
                     'height': int(height),
                 })
 
@@ -155,10 +157,12 @@ class MSS(MSSBase):
                 all_monitors = self.core.CGRectUnion(all_monitors, rect)
 
             # Set the AiO monitor's values
+            rounded_width = int(math.ceil(all_monitors.size.width // 16) * 16)
             self._monitors[0] = {
                 'left': int(all_monitors.origin.x),
                 'top': int(all_monitors.origin.y),
-                'width': int(all_monitors.size.width),
+                'width': rounded_width,
+                'original_width': int(all_monitors.size.width),
                 'height': int(all_monitors.size.height),
             }
 
@@ -211,7 +215,7 @@ class MSS(MSSBase):
             end = start + monitor['width'] * 4
             cropped.extend(data[start:end])
 
-        if len(cropped) < monitor['width'] * monitor['width'] * 4:
+        if len(cropped) < monitor['width'] * monitor['height'] * 4:
             cropped.extend(b'\00' * (monitor['width'] - rounded_width) * 4)
 
         return cropped
